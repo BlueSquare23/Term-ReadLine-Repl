@@ -3,13 +3,58 @@
 use warnings;
 use strict;
 
+use Getopt::Long;
 use Data::Dumper;
 
 use lib './lib';
-
-
 use Term::ReadLine::Repl;
 
+my %O = (
+    dry => 1,
+);
+
+# Used for both regular getopts cli args parse and repl -flags parsing.
+sub get_opts_parse {
+    GetOptions(\%O,
+        'dry|n!',
+        'force',
+        'mem_buffer=i',
+        'timeout=i',
+        'verbose!',
+    ) or die "cant!";
+}
+
+sub custom_logic {
+    my $args = shift;
+
+    print Dumper \%O;
+
+    # Testing return
+    if ($args->[0] eq 'test') {
+        return {
+            action => 'next'
+        };
+    }
+
+    if ($args->[0] eq 'end') {
+        return {
+            action => 'last'
+        };
+    }
+
+    if ($args->[0] eq 'fart') {
+        return {
+            schema => {
+                blah => {
+                    exec => sub {print "fart\n";},
+                    args => [{
+                        refresh => undef,
+                    }] 
+                } 
+            } 
+        };
+    }
+}
 
 sub get_stats {
     my $arg = shift;
@@ -45,7 +90,9 @@ my $term = Term::ReadLine::Repl->new(
                 args => [{refresh=>undef, 'cluster|host'=>undef, 'hostname'=>undef}],
             }
         },
-        passthrough => 1,  # Enable !command system passthrough
+        passthrough => 1,
+        get_opts => \&get_opts_parse,
+        custom_logic => \&custom_logic,
     }
 );
 

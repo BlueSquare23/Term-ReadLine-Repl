@@ -5,19 +5,31 @@ package Term::ReadLine::Repl;
 
 =head1 NAME
 
-Term::ReadLine::Repl - A batteries included interactive Term::ReadLine Repl
+Term::ReadLine::Repl - A batteries included interactive Term::ReadLine Repl module
     
 =head1 SYNOPSIS
 
     use Term::ReadLine::Repl;
 
-    my $term = Term::ReadLine::Repl->new(
+    # A simple repl
+    my $repl = Term::ReadLine::Repl->new(
+        {
+            name => 'myrepl',
+            cmd_schema => {
+                ls => { 
+                    exec => \&list_stuff,  # Coderef to custom function for cmd
+                }
+            }
+     )   
+
+    # A complete repl
+    $repl = Term::ReadLine::Repl->new(
         {
             name => 'myrepl',
             prompt => '(%s)>',
             cmd_schema => {
                 stats => { 
-                    exec => \&get_stats,  # Code ref to function
+                    exec => \&get_stats,  # Coderef to function
 #                    args => \@args,  # List of function arg names
                     args => [{
                         refresh => undef,
@@ -30,11 +42,12 @@ Term::ReadLine::Repl - A batteries included interactive Term::ReadLine Repl
             },
             passthrough => 1,  # Enable !command system passthrough
             hist_file => '/path/to/.hist_file',
-            get_opts => [ $Opts, &arg_parse() ],
-        };
-    )
+            get_opts => \&arg_parse  # Coderef to Getopt::Long parse function
+            custom_logic => \&my_custom_loop_ctrl  # Coderef to custom logic run mid repl loop
+        }
+    );
 
-    $term->run();
+    $repl->run();
 
 =head1 DESCRIPTION
 
@@ -60,31 +73,22 @@ sub new {
     my ($class, $args) = @_;
 
     my $self = {
-        name        =>  $args->{name} // 'repl',
-        prompt      =>  defined $args->{prompt} ? sprintf $args->{prompt}, $args->{name} : '(repl)>',
-        cmd_schema  =>  $args->{cmd_schema},
-        passthrough =>  $args->{passthrough} // 0,
-        hist_file   =>  $args->{hist_file},
-        get_opts    =>  $args->{get_opts},
+        name         =>  $args->{name} // 'repl',
+        prompt       =>  defined $args->{prompt} ? sprintf $args->{prompt}, $args->{name} : '(repl)>',
+        cmd_schema   =>  $args->{cmd_schema},
+        passthrough  =>  $args->{passthrough} // 0,
+        hist_file    =>  $args->{hist_file},
+        get_opts     =>  $args->{get_opts},
+        custom_logic =>  $args->{custom_logic},
     };
     
     bless $self, $class;
 
-# haven't decided if we need this yet or not...
+# TODO: Write this!
 #    validate_args($args);
 
     return $self;
 }
-
-
-# Accessors
-#sub name            { $_[0]->{name} }
-#sub prompt          { $_[0]->{prompt} }
-#sub cmd_schema      { $_[0]->{cmd_schema} }
-#sub passthrough     { $_[0]->{passthrough} }
-#sub hist_file       { $_[0]->{hist_file} }
-#sub get_opts        { $_[0]->{get_opts} }
-
 
 =item C<run($args)>
 
@@ -103,7 +107,7 @@ sub run {
     print colored(sprintf("Welcome to $self->{name} shell!"), 'green underline italic bold'), "\n";
     print colored(sprintf("Type 'help' for more options, <TAB> to auto complete."), 'green bold'), "\n";
 
-    # TODO: Put in its own method
+    # TODO: Put in its own method(s)
     # Tab completion.
     $attribs->{completion_function} = sub {
         my ($text, $line) = @_;
@@ -125,8 +129,8 @@ sub run {
                 my $opt_arg_index = $arg_index -1;
 
                 # If next word matches args key, go into optargs
-                my $opt_arg = $self->{cmd_schema}{$cmd}{args}[$opt_arg_index]{$complete_words[-1]};
-                if (defined $opt_arg) {
+                if (exists $self->{cmd_schema}{$cmd}{args}[$opt_arg_index]{$complete_words[-1]}) {
+                    my $opt_arg = $self->{cmd_schema}{$cmd}{args}[$opt_arg_index]{$complete_words[-1]};
                     return "<$opt_arg>";
                 }
 
@@ -175,10 +179,6 @@ sub run {
 
         if ($input =~ 'help') {
             $self->_help();
-#            pod2usage(-sections => [qw(SYNOPSIS/COMMAND SYNOPSIS/TARGETS)], -verbose => 99, -exitval=>'NOEXIT');
-# TODO: Figure out help here. We could be lazy and just accept custom help menu
-# sub ref. But I kinda like the idea of dynamically building a little help menu
-# from cmd_schema.
             next;
         }
 
@@ -191,20 +191,43 @@ sub run {
             next;
         }
 
-# TODO: Figure out args parse via dep inverted custom user supplied parser.
-        # Clobber ARGV for getopts parsing,
-#        @ARGV = @args;
-#        get_opts_parse();
+        if (defined $self->{get_opts}) {
+            # TODO: Add validation to assert get_opts is a coderef or raise exception or croak.
 
-        # Then update VRM args with new options.
-#        $VRM->set_args(\%O);
+            # Clobber ARGV for getopts parsing, doesn't matter because client
+            # code parser will slurp args outta @ARGV again right away.
+            @ARGV = @args;
+            $self->{get_opts}->();
+        }
+
+        # Custom loop logic.
+        # User custom function can return a hashref like the following.
+        # { 
+        #     action => next|last|undef,
+        #     schema => $schema,  # Where schema is a hashref containing any changes your custom logic might make to cmd_schema.
+        # }
+        if (defined $self->{custom_logic}) {
+            my $result = eval {
+                $self->{custom_logic}->(\@args);
+            };
+
+            if (defined $result && ref $result eq 'HASH') {
+                if (defined $result->{action}) {
+                    next if $result->{action} eq 'next';
+                    last if $result->{action} eq 'last';
+                }
+                if (defined $result->{schema}) {
+                    $self->{cmd_schema} = $result->{schema};
+                }
+            }
+        }
 
         my $cmd = shift @args;
-#        print ref $self->{cmd_schema}{$cmd};
 
-        my $exec = $self->{cmd_schema}{$cmd}{exec};
-        if (defined $exec) {
-            $exec->(@args);
+        if (exists $self->{cmd_schema}{$cmd}) {
+            $self->{cmd_schema}{$cmd}{exec}->(@args);
+        } else {
+            print "No such command '$cmd' run 'help' to see options\n";
         }
     }
     print "\n" . colored(sprintf("Goodbye!"), 'green bold underline italic'), "\n";
@@ -258,8 +281,6 @@ sub _save_history {
     } 
     close $fh;
 }
-
-
 
 
 =head1 AUTHORS
