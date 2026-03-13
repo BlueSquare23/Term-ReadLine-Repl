@@ -7,8 +7,8 @@ our $VERSION = '0.0.1';
 
 =head1 NAME
 
-Term::ReadLine::Repl - A batteries included interactive Term::ReadLine Repl module
-    
+Term::ReadLine::Repl - A batteries included interactive Term::ReadLine REPL module
+
 =head1 SYNOPSIS
 
     use Term::ReadLine::Repl;
@@ -16,36 +16,38 @@ Term::ReadLine::Repl - A batteries included interactive Term::ReadLine Repl modu
     # A simple repl
     my $repl = Term::ReadLine::Repl->new(
         {
-            name => 'myrepl',
+            name       => 'myrepl',
             cmd_schema => {
-                ls => { 
-                    exec => sub {my @list = qw(a b c); print for @list},  # Coderef to custom function for cmd
-                }
-            }
+                ls => {
+                    exec => sub { my @list = qw(a b c); print for @list },
+                },
+            },
         }
     );
 
     # A complete repl
     $repl = Term::ReadLine::Repl->new(
         {
-            name => 'myrepl',
-            prompt => '(%s)>',
+            name       => 'myrepl',
+            prompt     => '(%s)>',
             cmd_schema => {
-                stats => { 
-                    exec => \&get_stats,  # Coderef to function
-                    args => [{
-                        refresh => undef,
-                        host => 'hostname',
-                        guest => 'guestname',
-                        list => 'host|guest',
-                        cluster => undef,
-                    }],
+                stats => {
+                    exec => \&get_stats,
+                    args => [
+                        {
+                            refresh => undef,
+                            host    => 'hostname',
+                            guest   => 'guestname',
+                            list    => 'host|guest',
+                            cluster => undef,
+                        }
+                    ],
                 },
             },
-            passthrough => 1,  # Enable !command system passthrough
-            hist_file => '/path/to/.hist_file',
-            get_opts => \&arg_parse  # Coderef to Getopt::Long parse function
-            custom_logic => \&my_custom_loop_ctrl  # Coderef to custom logic run mid repl loop
+            passthrough  => 1,
+            hist_file    => '/path/to/.hist_file',
+            get_opts     => \&arg_parse,
+            custom_logic => \&my_custom_loop_ctrl,
         }
     );
 
@@ -53,10 +55,134 @@ Term::ReadLine::Repl - A batteries included interactive Term::ReadLine Repl modu
 
 =head1 DESCRIPTION
 
-=head2 Overview
+C<Term::ReadLine::Repl> provides a simple framework for building interactive
+command-line REPLs (Read-Eval-Print Loops) on top of L<Term::ReadLine>. It
+handles tab completion, command history, a built-in help system, and optional
+passthrough to shell commands, so you can focus on defining your commands
+rather than plumbing the terminal interaction.
 
+=head1 CONSTRUCTOR
 
-=head2 Methods
+=over 4
+
+=item C<new(\%args)>
+
+Creates and returns a new C<Term::ReadLine::Repl> object. Accepts a hashref
+with the following keys:
+
+=over 4
+
+=item C<name> (required)
+
+A string used as the name of the REPL, displayed in the welcome message and
+optionally interpolated into the prompt via C<%s>.
+
+=item C<cmd_schema> (required)
+
+A hashref defining the available commands. Each key is a command name, and
+its value is a hashref with the following keys:
+
+=over 4
+
+=item C<exec> (required)
+
+A coderef that is called when the command is invoked. Any arguments supplied
+on the command line (after the command name) are passed to the coderef.
+
+=item C<args> (optional)
+
+An arrayref of hashrefs describing the command's arguments for tab completion.
+Each hashref maps an argument name to either C<undef> (flag, no value expected)
+or a string describing the expected value (used as a completion hint).
+
+=back
+
+=item C<prompt> (optional)
+
+A C<sprintf>-style format string for the prompt. C<%s> is replaced with the
+REPL name. Defaults to C<(repl)>>.
+
+=item C<passthrough> (optional)
+
+When set to a true value, any input beginning with C<!> is passed directly to
+the system shell. For example, C<!ls -la> would run C<ls -la>. Defaults to C<0>.
+
+=item C<hist_file> (optional)
+
+Path to a file used for persistent command history. History is loaded on
+startup and saved on exit. If not specified, history is not persisted.
+
+=item C<get_opts> (optional)
+
+A coderef to a L<Getopt::Long> parsing function. When provided, it is called
+before each command dispatch with C<@ARGV> populated from the current input line.
+
+=item C<custom_logic> (optional)
+
+A coderef invoked on each loop iteration before command dispatch. Receives an
+arrayref of the parsed input tokens. May return a hashref with the following
+optional keys:
+
+=over 4
+
+=item C<action>
+
+Set to C<'next'> to skip to the next loop iteration, or C<'last'> to exit
+the REPL loop.
+
+=item C<schema>
+
+A replacement C<cmd_schema> hashref to swap in for subsequent iterations.
+
+=back
+
+=back
+
+=back
+
+=head1 METHODS
+
+=over 4
+
+=item C<run()>
+
+Launches the interactive REPL session. Prints a welcome message, then enters
+the read-eval-print loop until the user types C<quit>, C<exit>, or C<EOF>.
+Saves history on exit if C<hist_file> was configured.
+
+=item C<validate_args(\%args)>
+
+Validates the constructor argument hashref. Croaks with a descriptive message
+if any required arguments are missing or if any values have an unexpected type.
+Called automatically by C<new()>.
+
+=back
+
+=head1 BUILT-IN COMMANDS
+
+The following commands are automatically added to every REPL:
+
+=over 4
+
+=item C<help>
+
+Prints all available commands and their arguments.
+
+=item C<quit> / C<exit>
+
+Exits the REPL session.
+
+=back
+
+=head1 TAB COMPLETION
+
+Tab completion is provided automatically for command names and their defined
+arguments. Completions are driven by the C<args> key in each command's schema.
+Passthrough commands (those beginning with C<!>) are excluded from completion.
+
+=head1 AUTHORS
+
+Written by John R. Copyright (c) 2026
 
 =cut
 
@@ -65,12 +191,6 @@ use JSON qw(encode_json decode_json);
 use Term::ANSIColor;
 use Term::ReadLine;
 use Carp qw(croak);
-
-=item C<new($args)>
-
-Returns built term object based on user supplied args hashref.
-
-=cut
 
 sub new {
     my ($class, $args) = @_;
@@ -95,12 +215,6 @@ sub new {
 
     return $self;
 }
-
-=item C<validate_args($args)>
-
-Ensures that args hashref has the proper form for creating a repl.
-
-=cut
 
 sub validate_args {
     my ($self, $args) = @_;
@@ -139,13 +253,6 @@ sub validate_args {
         croak "get_opts is NOT a coderef!" unless ref $args->{get_opts} eq 'CODE';
     }
 }
-
-
-=item C<run($args)>
-
-Launches interactive session for custom defined repl.
-
-=cut
 
 sub run {
     my ($self) = @_;
@@ -339,11 +446,4 @@ sub _save_history {
     close $fh;
 }
 
-
-=head1 AUTHORS
-
-    Written by John R. Copyright (c) 2026
-=cut
-
 1;
-
