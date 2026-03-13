@@ -1,3 +1,5 @@
+![CI](https://github.com/BlueSquare23/Term-ReadLine-Repl/actions/workflows/ci.yml/badge.svg)
+
 # NAME
 
 Term::ReadLine::Repl - A batteries included interactive Term::ReadLine REPL module
