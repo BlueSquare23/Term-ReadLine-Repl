@@ -5,7 +5,7 @@ use Module::Build;
 my $build = Module::Build->new(
     module_name        => 'Term::ReadLine::Repl',
     license            => 'perl',
-    dist_author        => 'John R.',
+    dist_author        => 'John R. <johnlradford23@gmail.com>',
     requires => {
         'perl'             => '5.010',
         'Data::Dumper'     => 0,
