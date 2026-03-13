@@ -1,0 +1,9 @@
+Build
+_build/
+blib/
+MYMETA.*
+*.bak
+*.swp
+**/#*#
+**/*~
+*.tar.gz

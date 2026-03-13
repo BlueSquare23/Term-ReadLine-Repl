@@ -108,7 +108,19 @@ my $term = Term::ReadLine::Repl->new(
     }
 );   
 
-print Dumper $term;
+## A simple repl
+#my $term = Term::ReadLine::Repl->new(
+#    {
+#        name => 'myrepl',
+#        cmd_schema => {
+#            ls => { 
+#                exec => sub {my @list = qw(a b c); print for @list},  # Coderef to custom function for cmd
+#            }
+#        }
+#    }
+#);   
+
+#print Dumper $term;
 
 $term->run();
 
