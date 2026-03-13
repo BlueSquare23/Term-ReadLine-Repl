@@ -219,8 +219,6 @@ sub new {
 sub validate_args {
     my ($self, $args) = @_;
 
-    print Dumper $args;
-
     # Ensure name and cmd_schema exist (required args)
     croak "name is a required arg!" unless exists $args->{name} && defined $args->{name};
     croak "cmd_schema is a required arg!" unless exists $args->{cmd_schema} && defined $args->{cmd_schema};
@@ -274,7 +272,7 @@ sub run {
     # Simple REPL loop.
     while (defined (my $input = $term->readline($prompt))) {
         chomp $input;
-        last if ($input =~ 'exit|quit');
+        last if ($input =~ /^(exit|quit)$/);
 
         next unless $input;
 
