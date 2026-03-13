@@ -237,7 +237,6 @@ See L<http://dev.perl.org/licenses/> for more information.
 =cut
 
 use Data::Dumper;
-use JSON qw(encode_json decode_json);
 use Term::ANSIColor;
 use Term::ReadLine;
 use Carp qw(croak);
