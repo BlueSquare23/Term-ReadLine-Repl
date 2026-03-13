@@ -323,7 +323,6 @@ sub run {
         chomp $input;
         last if ($input =~ /^(exit|quit)$/);
 
-
         next unless $input;
 
         if ($input =~ 'help') {
