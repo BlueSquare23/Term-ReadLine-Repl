@@ -1,7 +1,7 @@
 ---
 abstract: 'A batteries included interactive Term::ReadLine REPL module'
 author:
-  - 'John R.'
+  - 'John R. <johnlradford23@gmail.com>'
 build_requires:
   Module::Build: '0'
   Test::Exception: '0'
