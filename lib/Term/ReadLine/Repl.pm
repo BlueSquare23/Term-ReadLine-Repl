@@ -3,6 +3,8 @@ use warnings;
 
 package Term::ReadLine::Repl;
 
+our $VERSION = '0.0.1';
+
 =head1 NAME
 
 Term::ReadLine::Repl - A batteries included interactive Term::ReadLine Repl module
