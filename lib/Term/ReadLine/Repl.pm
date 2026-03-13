@@ -61,6 +61,49 @@ handles tab completion, command history, a built-in help system, and optional
 passthrough to shell commands, so you can focus on defining your commands
 rather than plumbing the terminal interaction.
 
+=head2 Overview
+
+You define your commands and their arguments via the C<cmd_schema> hashref
+passed to C<new()>. Each command maps to an C<exec> coderef that is called
+when the user types that command, and an optional C<args> structure that drives
+tab completion. Once constructed, calling C<run()> drops the user into an
+interactive prompt.
+
+The module handles the following automatically:
+
+=over 4
+
+=item *
+
+B<Tab completion> — command names and their arguments are completed from the
+C<cmd_schema> definition. Passthrough commands (prefixed with C<!>) are
+excluded.
+
+=item *
+
+B<Command history> — input history is maintained in-session via
+L<Term::ReadLine>, and can be persisted across sessions by supplying a
+C<hist_file> path.
+
+=item *
+
+B<Built-in commands> — C<help> and C<quit>/C<exit> are injected automatically
+into every REPL.
+
+=item *
+
+B<Shell passthrough> — when C<passthrough> is enabled, any input prefixed with
+C<!> is forwarded directly to the system shell, making it easy to run one-off
+shell commands without leaving the REPL.
+
+=item *
+
+B<Custom loop hooks> — the C<get_opts> and C<custom_logic> callbacks let you
+plug L<Getopt::Long> parsing and arbitrary mid-loop logic into the REPL without
+having to subclass or modify the module.
+
+=back
+
 =head1 CONSTRUCTOR
 
 =over 4
@@ -184,6 +227,13 @@ Passthrough commands (those beginning with C<!>) are excluded from completion.
 
 Written by John R. Copyright (c) 2026
 
+=head1 LICENSE
+
+This library is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
+
+See L<http://dev.perl.org/licenses/> for more information.
+
 =cut
 
 use Data::Dumper;
@@ -273,6 +323,7 @@ sub run {
     while (defined (my $input = $term->readline($prompt))) {
         chomp $input;
         last if ($input =~ /^(exit|quit)$/);
+
 
         next unless $input;
 
