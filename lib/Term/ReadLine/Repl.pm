@@ -17,10 +17,11 @@ Term::ReadLine::Repl - A batteries included interactive Term::ReadLine Repl modu
             name => 'myrepl',
             cmd_schema => {
                 ls => { 
-                    exec => \&list_stuff,  # Coderef to custom function for cmd
+                    exec => sub {my @list = qw(a b c); print for @list},  # Coderef to custom function for cmd
                 }
             }
-     )   
+        }
+    );
 
     # A complete repl
     $repl = Term::ReadLine::Repl->new(
@@ -30,7 +31,6 @@ Term::ReadLine::Repl - A batteries included interactive Term::ReadLine Repl modu
             cmd_schema => {
                 stats => { 
                     exec => \&get_stats,  # Coderef to function
-#                    args => \@args,  # List of function arg names
                     args => [{
                         refresh => undef,
                         host => 'hostname',
@@ -81,7 +81,11 @@ sub new {
         get_opts     =>  $args->{get_opts},
         custom_logic =>  $args->{custom_logic},
     };
-    
+
+    # Add builtin commands.
+    $self->{cmd_schema}{help}={}; 
+    $self->{cmd_schema}{quit}={}; 
+
     bless $self, $class;
 
 # TODO: Write this!
@@ -125,6 +129,9 @@ sub run {
             my $arg_index = (scalar(@complete_words) - 1);  # -1 because first word is always $cmd
             
             if ($self->{cmd_schema}{$cmd}) {
+
+                # None of the below make sense unless we have args.
+                return () unless $self->{cmd_schema}{$cmd}{args};
 
                 my $opt_arg_index = $arg_index -1;
 
@@ -176,6 +183,8 @@ sub run {
     while (defined (my $input = $term->readline($prompt))) {
         chomp $input;
         last if ($input =~ 'exit|quit');
+
+        next unless $input;
 
         if ($input =~ 'help') {
             $self->_help();
@@ -240,6 +249,7 @@ sub _help {
     my $output;
     for my $cmd (keys %{$self->{cmd_schema}}) {
         $output .= "$cmd\n";
+        next unless $self->{cmd_schema}{$cmd}{args};
         for my $args (sort @{$self->{cmd_schema}{$cmd}{args}} ) {
             $output .= "    ";
             for my $arg (keys %{$args}) {
@@ -252,7 +262,7 @@ sub _help {
             $output .= "\n";
         }
     }
-    print "$output\n";
+    print "$output";
 }
 
 sub _read_history {
