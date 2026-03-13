@@ -15,7 +15,8 @@ my $build = Module::Build->new(
         'Carp'             => 0,
     },
     build_requires => {
-        'Module::Build' => 0,
+        'Module::Build'   => 0,
+        'Test::Exception' => 0,
     },
 );
 
