@@ -75,30 +75,30 @@ The module handles the following automatically:
 
 =item *
 
-B<Tab completion> — command names and their arguments are completed from the
+B<Tab completion> - command names and their arguments are completed from the
 C<cmd_schema> definition. Passthrough commands (prefixed with C<!>) are
 excluded.
 
 =item *
 
-B<Command history> — input history is maintained in-session via
+B<Command history> - input history is maintained in-session via
 L<Term::ReadLine>, and can be persisted across sessions by supplying a
 C<hist_file> path.
 
 =item *
 
-B<Built-in commands> — C<help> and C<quit>/C<exit> are injected automatically
+B<Built-in commands> - C<help> and C<quit>/C<exit> are injected automatically
 into every REPL.
 
 =item *
 
-B<Shell passthrough> — when C<passthrough> is enabled, any input prefixed with
+B<Shell passthrough> - when C<passthrough> is enabled, any input prefixed with
 C<!> is forwarded directly to the system shell, making it easy to run one-off
 shell commands without leaving the REPL.
 
 =item *
 
-B<Custom loop hooks> — the C<get_opts> and C<custom_logic> callbacks let you
+B<Custom loop hooks> - the C<get_opts> and C<custom_logic> callbacks let you
 plug L<Getopt::Long> parsing and arbitrary mid-loop logic into the REPL without
 having to subclass or modify the module.
 

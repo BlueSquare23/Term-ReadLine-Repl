@@ -54,6 +54,31 @@ handles tab completion, command history, a built-in help system, and optional
 passthrough to shell commands, so you can focus on defining your commands
 rather than plumbing the terminal interaction.
 
+## Overview
+
+You define your commands and their arguments via the `cmd_schema` hashref
+passed to `new()`. Each command maps to an `exec` coderef that is called
+when the user types that command, and an optional `args` structure that drives
+tab completion. Once constructed, calling `run()` drops the user into an
+interactive prompt.
+
+The module handles the following automatically:
+
+- **Tab completion** - command names and their arguments are completed from the
+`cmd_schema` definition. Passthrough commands (prefixed with `!`) are
+excluded.
+- **Command history** - input history is maintained in-session via
+[Term::ReadLine](https://metacpan.org/pod/Term%3A%3AReadLine), and can be persisted across sessions by supplying a
+`hist_file` path.
+- **Built-in commands** - `help` and `quit`/`exit` are injected automatically
+into every REPL.
+- **Shell passthrough** - when `passthrough` is enabled, any input prefixed with
+`!` is forwarded directly to the system shell, making it easy to run one-off
+shell commands without leaving the REPL.
+- **Custom loop hooks** - the `get_opts` and `custom_logic` callbacks let you
+plug [Getopt::Long](https://metacpan.org/pod/Getopt%3A%3ALong) parsing and arbitrary mid-loop logic into the REPL without
+having to subclass or modify the module.
+
 # CONSTRUCTOR
 
 - `new(\%args)`
@@ -152,3 +177,10 @@ Passthrough commands (those beginning with `!`) are excluded from completion.
 # AUTHORS
 
 Written by John R. Copyright (c) 2026
+
+# LICENSE
+
+This library is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
+
+See [http://dev.perl.org/licenses/](http://dev.perl.org/licenses/) for more information.
