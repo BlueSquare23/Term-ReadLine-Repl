@@ -6,7 +6,7 @@ use strict;
 use Getopt::Long;
 use Data::Dumper;
 
-use lib './lib';
+#use lib './lib';
 use Term::ReadLine::Repl;
 
 my %O = (

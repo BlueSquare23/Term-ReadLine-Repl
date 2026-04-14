@@ -3,7 +3,7 @@ use warnings;
 
 package Term::ReadLine::Repl;
 
-our $VERSION = '0.0.1';
+our $VERSION = '0.0.2';
 
 =head1 NAME
 
@@ -225,7 +225,7 @@ Passthrough commands (those beginning with C<!>) are excluded from completion.
 
 =head1 AUTHORS
 
-Written by John R. Copyright (c) 2026
+Written by John L. Radford, Copyright (c) 2026
 
 =head1 LICENSE
 

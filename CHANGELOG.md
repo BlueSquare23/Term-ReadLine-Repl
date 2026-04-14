@@ -24,6 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Build.PL` for distribution build and dependency management.
 - `META.yml` and `MANIFEST` for CPAN packaging.
 - Full POD documentation including constructor args, methods, built-in commands,
-  and tab completion behaviour.
+  and tab completion behavior.
 - Test suite covering `validate_args` croak paths, construction sanity checks,
-  and `_tab_complete` behaviour.
+  and `_tab_complete` behavior.
