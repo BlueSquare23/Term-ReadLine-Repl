@@ -325,7 +325,7 @@ sub run {
 
         next unless $input;
 
-        if ($input =~ 'help') {
+        if ($input eq 'help') {
             $self->_help();
             next;
         }
@@ -334,7 +334,7 @@ sub run {
 
         # Command line passthrough.
         if ($self->{passthrough} && @args && $args[0] =~ /^\!/) {
-            $args[0] =~ s/\!//g;
+            $args[0] =~ s/^\!//;
             system(@args);
             next;
         }
@@ -484,7 +484,7 @@ sub _save_history {
 
     my $attribs = $term->Attribs;
 
-    open my $fh, '>>', $self->{hist_file} or warn "Couldn't save history file: $!";
+    open my $fh, '>', $self->{hist_file} or warn "Couldn't save history file: $!";
     if ($term->ReadLine =~ /Gnu/) {
         for my $line ($term->GetHistory) {
             print $fh "$line\n";

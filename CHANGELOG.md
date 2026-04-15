@@ -20,6 +20,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Clarify help menu by removing `=` from help output.
 - Clean up warn read write message. Had leftovers in it, oops...
+- Fix `help` dispatch using regex match instead of string equality, which caused
+  any input containing the substring "help" to incorrectly trigger the help menu.
+- Fix shell passthrough stripping all `!` characters from the command token instead
+  of only the leading one, which corrupted commands containing `!` in their arguments.
+- Fix history file being opened in append mode on save, causing entries to accumulate
+  across sessions; now overwrites with the full current history on exit.
 
 ## [0.0.1] - 2026-03-13
 
