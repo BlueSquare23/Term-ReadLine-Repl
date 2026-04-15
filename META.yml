@@ -17,7 +17,7 @@ name: Term-ReadLine-Repl
 provides:
   Term::ReadLine::Repl:
     file: lib/Term/ReadLine/Repl.pm
-    version: v0.0.1
+    version: v0.0.2
 requires:
   Carp: '0'
   Data::Dumper: '0'
@@ -27,5 +27,5 @@ requires:
   perl: '5.010'
 resources:
   license: http://dev.perl.org/licenses/
-version: v0.0.1
+version: v0.0.2
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
