@@ -456,7 +456,7 @@ sub _help {
             for my $arg (keys %{$args}) {
                 my $opt = $args->{$arg};
                 $output .= "$arg";
-                $output .= defined $opt ? "=<$opt>, " : ", ";
+                $output .= defined $opt ? " <$opt>, " : ", ";
             }
             substr($output, -1) = "";  # Remove trailing space
             substr($output, -1) = "";  # Remove trailing ,
@@ -470,7 +470,7 @@ sub _read_history {
     my ($self, $term) = @_;
 
     if (-f $self->{hist_file}) {
-        open my $fh, '<', $self->{hist_file} or warn "Couldn't read auto bal history file: $!";
+        open my $fh, '<', $self->{hist_file} or warn "Couldn't read history file: $!";
         while (my $line = <$fh>) {
             chomp $line;
             $term->addhistory($line);
@@ -484,7 +484,7 @@ sub _save_history {
 
     my $attribs = $term->Attribs;
 
-    open my $fh, '>>', $self->{hist_file} or warn "Couldn't save auto bal history: $!";
+    open my $fh, '>>', $self->{hist_file} or warn "Couldn't save history file: $!";
     if ($term->ReadLine =~ /Gnu/) {
         for my $line ($term->GetHistory) {
             print $fh "$line\n";
