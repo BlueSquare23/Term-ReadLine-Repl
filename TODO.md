@@ -45,7 +45,7 @@
     automatically into every REPL"). The fix is to add
     `$self->{cmd_schema}{exit} = {}` alongside the existing `quit` injection.
 
-* [ ] **[SIGNIFICANT] `args` validation accepts any reference, not just ARRAY refs (validate_args(), line 287)**
+* [x] **[SIGNIFICANT] `args` validation accepts any reference, not just ARRAY refs (validate_args(), line 287)**
   - `unless ref $schema->{args}` is true for *any* reference type — HASH, CODE, SCALAR,
     etc. — so the error message "args is NOT a arrayref!" would never fire for a user who
     accidentally passes a hashref or coderef as `args`. The check should be

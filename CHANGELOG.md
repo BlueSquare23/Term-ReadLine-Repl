@@ -22,10 +22,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Clean up warn read write message. Had leftovers in it, oops...
 - Fix `help` dispatch using regex match instead of string equality, which caused
   any input containing the substring "help" to incorrectly trigger the help menu.
+- Trim leading/trailing whitespace from input after `chomp` so commands with
+  incidental surrounding spaces are handled correctly throughout the run loop.
 - Fix shell passthrough stripping all `!` characters from the command token instead
   of only the leading one, which corrupted commands containing `!` in their arguments.
 - Fix history file being opened in append mode on save, causing entries to accumulate
   across sessions; now overwrites with the full current history on exit.
+- Fix `args` validation accepting any reference type instead of requiring an ARRAY ref,
+  meaning a mistyped hashref or coderef passed as `args` would silently pass validation.
 
 ## [0.0.1] - 2026-03-13
 

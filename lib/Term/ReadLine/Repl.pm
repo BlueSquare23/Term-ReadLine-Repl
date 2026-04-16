@@ -285,7 +285,7 @@ sub validate_args {
 
         # Ensure that args is an array
         if (exists $schema->{args} && defined $schema->{args}) {
-            croak "'$cmd' args is NOT a arrayref!" unless ref $schema->{args};
+            croak "'$cmd' args is NOT a arrayref!" unless ref $schema->{args} eq 'ARRAY';
 
             croak "'$cmd' args array is empty!" if scalar @{$schema->{args}} < 1;
 
@@ -321,6 +321,7 @@ sub run {
     # Simple REPL loop.
     while (defined (my $input = $term->readline($prompt))) {
         chomp $input;
+        $input =~ s/^\s+|\s+$//g;
         last if ($input =~ /^(exit|quit)$/);
 
         next unless $input;
