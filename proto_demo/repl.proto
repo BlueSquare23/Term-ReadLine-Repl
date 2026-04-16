@@ -1,0 +1,17 @@
+syntax = "proto2";
+
+package repl;
+
+// Sent from the Python client to the Perl REPL server
+message ReplRequest {
+    optional string command = 1;
+    repeated string args    = 2;
+}
+
+// Sent from the Perl REPL server back to the Python client
+message ReplResponse {
+    optional bool   success            = 1;
+    optional string output             = 2;
+    optional bool   should_exit        = 3;
+    repeated string available_commands = 4;
+}
